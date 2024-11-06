@@ -435,90 +435,203 @@ class MusicModule: RCTEventEmitter {
         }
     }
 
-    @objc(setPlaybackQueue:type:resolver:rejecter:)
-    func setPlaybackQueue(_ itemId: String, type: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task {
-            do {
-                let musicItemId = MusicItemID.init(itemId)
+    // @objc(setPlaybackQueue:type:resolver:rejecter:)
+    // func setPlaybackQueue(_ itemId: String, type: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    //     Task {
+    //         do {
+    //             let musicItemId = MusicItemID.init(itemId)
 
-                if let requestType = MediaType.getRequest(forType: type, musicItemId: musicItemId) {
-                    switch requestType {
-                    case .song(let request):
-                        // Use request for song type
-                        let response = try await request.response()
+    //             if let requestType = MediaType.getRequest(forType: type, musicItemId: musicItemId) {
+    //                 switch requestType {
+    //                 // case .song(let request):
+    //                 //     // Use request for song type
+    //                 //     let response = try await request.response()
 
-                        guard let tracksToBeAdded = response.items.first else { return }
+    //                 //     guard let tracksToBeAdded = response.items.first else { return }
 
-                        let player = SystemMusicPlayer.shared
+    //                 //     let player = SystemMusicPlayer.shared
 
-                        player.queue = [tracksToBeAdded] /// <- directly add items to the queue
+    //                 //     player.queue = [tracksToBeAdded] /// <- directly add items to the queue
 
-                        try await player.prepareToPlay()
+    //                 //     try await player.prepareToPlay()
 
-                        resolve("Track(s) are added to queue")
+    //                 //     resolve("Track(s) are added to queue")
 
-                        return
+    //                 //     return
+    //                 case .song(let request):
+    // // Use request for song type
+    // let response = try await request.response()
 
-                    case .album(let request):
-                        // Use request for album type
-                        let response = try await request.response()
+    // guard let tracks = response.items else { return }
 
-                        guard let tracksToBeAdded = response.items.first else { return }
+    // let player = SystemMusicPlayer.shared
 
-                        let player = SystemMusicPlayer.shared
+    // // Create an array of MusicPlayerQueueEntry to add tracks with specific start and end times
+    // var queueEntries: [MusicPlayerQueueEntry] = []
 
-                        player.queue = [tracksToBeAdded] /// <- directly add items to the queue
+    // // Specify start and end times (example values)
+    // let startTime: TimeInterval = 10.0  // Start 10 seconds into the track
+    // let endTime: TimeInterval = 30.0    // End at 30 seconds into the track
 
-                        try await player.prepareToPlay()
+    // // Loop through the tracks and add them to the queue with start and end times
+    // for track in tracks {
+    //     // Create MusicPlayerQueueEntry with startTime and endTime
+    //     let entry = MusicPlayerQueueEntry(track: track, startTime: startTime, endTime: endTime)
+        
+    //     // Add the entry to the queueEntries array
+    //     queueEntries.append(entry)
+    // }
 
-                        resolve("Album is added to queue")
+    // // Assign the array of entries to the player's queue
+    // player.queue = queueEntries
 
-                        return
+    // // Prepare the player for playback
+    // try await player.prepareToPlay()
 
-                    case .playlist(let request):
-                        // Use request for playlist type
-                        let response = try await request.response()
+    // resolve("Track(s) are added to queue with start and end times")
+    // return
 
-                        guard let tracksToBeAdded = response.items.first else { return }
+    //                 case .album(let request):
+    //                     // Use request for album type
+    //                     let response = try await request.response()
 
-                        let player = SystemMusicPlayer.shared
+    //                     guard let tracksToBeAdded = response.items.first else { return }
 
-                        player.queue = [tracksToBeAdded] /// <- directly add items to the queue
+    //                     let player = SystemMusicPlayer.shared
 
-                        try await player.prepareToPlay()
+    //                     player.queue = [tracksToBeAdded] /// <- directly add items to the queue
 
-                        resolve("Playlist is added to queue")
+    //                     try await player.prepareToPlay()
 
-                        return
+    //                     resolve("Album is added to queue")
 
-                    case .station(let request):
-                        // Use request for station type
-                        let response = try await request.response()
+    //                     return
 
-                        guard let tracksToBeAdded = response.items.first else { return }
+    //                 case .playlist(let request):
+    //                     // Use request for playlist type
+    //                     let response = try await request.response()
 
-                        let player = SystemMusicPlayer.shared
+    //                     guard let tracksToBeAdded = response.items.first else { return }
 
-                        player.queue = [tracksToBeAdded] /// <- directly add items to the queue
+    //                     let player = SystemMusicPlayer.shared
 
-                        try await player.prepareToPlay()
+    //                     player.queue = [tracksToBeAdded] /// <- directly add items to the queue
 
-                        resolve("Station is added to queue")
+    //                     try await player.prepareToPlay()
 
-                        return
+    //                     resolve("Playlist is added to queue")
 
+    //                     return
+
+    //                 case .station(let request):
+    //                     // Use request for station type
+    //                     let response = try await request.response()
+
+    //                     guard let tracksToBeAdded = response.items.first else { return }
+
+    //                     let player = SystemMusicPlayer.shared
+
+    //                     player.queue = [tracksToBeAdded] /// <- directly add items to the queue
+
+    //                     try await player.prepareToPlay()
+
+    //                     resolve("Station is added to queue")
+
+    //                     return
+
+    //                 }
+    //             } else {
+    //                 print("Unknown media type.")
+
+    //                 return
+    //             }
+    //            } catch {
+    //              reject("ERROR", "Failed to set tracks to queue: \(error)", error)
+    //            }
+    //     }
+    // }
+
+@objc(setPlaybackQueue:type:startTime:endTime:resolver:rejecter:)
+func setPlaybackQueue(_ itemId: String, type: String, startTime: Double, endTime: Double, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    Task {
+        do {
+            let musicItemId = MusicItemID.init(itemId)
+
+            if let requestType = MediaType.getRequest(forType: type, musicItemId: musicItemId) {
+                let player = SystemMusicPlayer.shared
+
+                // Function to handle adding tracks to the queue
+                func addTracksToQueue(tracks: [MusicItem], startTime: TimeInterval?, endTime: TimeInterval?) {
+                    var queueEntries: [MusicPlayerQueueEntry] = []
+
+                    for track in tracks {
+                        // Add start and end time only if provided (i.e., for songs)
+                        if let start = startTime, let end = endTime {
+                            let entry = MusicPlayerQueueEntry(track: track, startTime: start, endTime: end)
+                            queueEntries.append(entry)
+                        } else {
+                            let entry = MusicPlayerQueueEntry(track: track)
+                            queueEntries.append(entry)
+                        }
                     }
-                } else {
-                    print("Unknown media type.")
 
-                    return
+                    player.queue = queueEntries
                 }
-               } catch {
-                 reject("ERROR", "Failed to set tracks to queue: \(error)", error)
-               }
+
+                switch requestType {
+                case .song(let request):
+                    let response = try await request.response()
+                    guard let tracks = response.items else { return }
+
+                    // Add tracks to the queue with start and end times (specific for songs)
+                    addTracksToQueue(tracks: tracks, startTime: startTime, endTime: endTime)
+
+                    try await player.prepareToPlay()
+
+                    resolve("Track(s) are added to queue with user-defined start and end times")
+
+                case .album(let request):
+                    let response = try await request.response()
+                    guard let tracks = response.items else { return }
+
+                    // Add tracks to the queue without start and end times (for albums)
+                    addTracksToQueue(tracks: tracks, startTime: nil, endTime: nil)
+
+                    try await player.prepareToPlay()
+
+                    resolve("Album is added to queue")
+
+                case .playlist(let request):
+                    let response = try await request.response()
+                    guard let tracks = response.items else { return }
+
+                    // Add tracks to the queue without start and end times (for playlists)
+                    addTracksToQueue(tracks: tracks, startTime: nil, endTime: nil)
+
+                    try await player.prepareToPlay()
+
+                    resolve("Playlist is added to queue")
+
+                case .station(let request):
+                    let response = try await request.response()
+                    guard let tracks = response.items else { return }
+
+                    // Add tracks to the queue without start and end times (for stations)
+                    addTracksToQueue(tracks: tracks, startTime: nil, endTime: nil)
+
+                    try await player.prepareToPlay()
+
+                    resolve("Station is added to queue")
+                }
+            } else {
+                print("Unknown media type.")
+                return
+            }
+        } catch {
+            reject("ERROR", "Failed to set tracks to queue: \(error)", error)
         }
     }
-
+}
     enum MediaType {
         case song(MusicCatalogResourceRequest<Song>)
         case album(MusicCatalogResourceRequest<Album>)

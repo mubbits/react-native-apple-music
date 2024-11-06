@@ -10,7 +10,14 @@ RCT_EXTERN_METHOD(checkSubscription:(RCTPromiseResolveBlock)resolve rejecter:(RC
 
 RCT_EXTERN_METHOD(catalogSearch:(NSString *)term types:(NSArray<NSString *> *)types options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(setPlaybackQueue:(NSString *)itemId type:(NSString *)type resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+// RCT_EXTERN_METHOD(setPlaybackQueue:(NSString *)itemId type:(NSString *)type resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(setPlaybackQueue:(NSString *)itemId
+                            type:(NSString *)type
+                            startTime:(nullable NSNumber *)startTime // Added start time
+                            endTime:(nullable NSNumber *)endTime // Added end time
+                            resolver:(RCTPromiseResolveBlock)resolve 
+                            rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(getTracksFromLibrary:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
